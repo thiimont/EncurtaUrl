@@ -9,6 +9,8 @@
    ![Docker](https://img.shields.io/badge/Docker-257bd6?logo=docker&logoColor=white)
    
    ![Imagem demonstrando o funcionamento da API, informando uma URL alvo e recebendo a URL encurtada](https://i.imgur.com/0rSjpce.png)
+
+URLs muito longas podem ser difíceis de compartilhar e pouco práticas em algumas situações. O EncurtaURL resolve esse problema ao armazenar o link original e gerar uma versão curta, facilitando o compartilhamento e o uso.
    
 </div>
 
@@ -34,7 +36,7 @@
    - **DB_PASSWORD**: Senha do seu usuário no banco de dados
    - **DB_URL**: URL da conexão JDBC com o banco de dados *(ex: jdbc:postgresql://localhost/db_sistema)*
    - **ENCURTAURL_BASE_URL**: A URL base do seu servidor. Deve estar no formato correto, essa vai ser a URL apresentada pela API junto com o código curto após o encurtamento. *(ex: https://google.com, http://127.0.0.1:8080)*
-   - **JWT_SECRET**: Segredo JWT de 256 bits, [**NÃO VAZE**](https://security.stackexchange.com/a/239895) e rotacione sempre que puder! *(ex: LzR7ceG3a1BhjQLzxvmxo2GqSuoSr7d3rAw1XGkgss9NJTL7i68btNlMGo6F6jyO)*
+   - **JWT_SECRET**: Segredo JWT de 256 bits, **NÃO VAZE** e rotacione sempre que puder. *(ex: LzR7ceG3a1BhjQLzxvmxo2GqSuoSr7d3rAw1XGkgss9NJTL7i68btNlMGo6F6jyO)*
 5. Rode o comando `mvn clean install` para fazer a build do projeto
 6. Para inicializar a aplicação, rode `mvn spring-boot:run` e a aplicação irá inicializar
 
@@ -50,7 +52,7 @@
    - **DB_PASSWORD**: Senha do seu usuário no banco de dados
    - **DB_URL**: URL da conexão JDBC com o banco de dados. Não use `localhost`, use `db` para referenciar o banco de dados. *(ex: jdbc:postgresql://db/db_sistema)*
    - **ENCURTAURL_BASE_URL**: A URL base do seu servidor. Deve estar no formato correto, essa vai ser a URL apresentada pela API junto com o código curto após o encurtamento. *(ex: https://google.com, http://127.0.0.1:8080)*
-   - **JWT_SECRET**: Segredo JWT de 256 bits, [**NÃO VAZE**](https://security.stackexchange.com/a/239895) e rotacione sempre que puder! *(ex: LzR7ceG3a1BhjQLzxvmxo2GqSuoSr7d3rAw1XGkgss9NJTL7i68btNlMGo6F6jyO)*
+   - **JWT_SECRET**: Segredo JWT de 256 bits, **NÃO VAZE** e rotacione sempre que puder. *(ex: LzR7ceG3a1BhjQLzxvmxo2GqSuoSr7d3rAw1XGkgss9NJTL7i68btNlMGo6F6jyO)*
 4. Ainda na raiz do repositório, rode o comando `docker-compose up --build` e aguarde
 5. Após a build, a aplicação irá inicializar automaticamente. Você pode parar os serviços com `docker-compose stop` ou apagar os containers com `docker-compose down` (**não apaga** os volumes) ou `docker-compose down -v` (**apaga** os volumes)
 
