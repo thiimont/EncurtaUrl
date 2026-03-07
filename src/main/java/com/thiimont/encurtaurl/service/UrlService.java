@@ -1,8 +1,8 @@
 package com.thiimont.encurtaurl.service;
 
+import com.thiimont.encurtaurl.configuration.UrlConfig;
 import com.thiimont.encurtaurl.dto.response.UrlResponseDTO;
 import com.thiimont.encurtaurl.exception.InactiveUrlException;
-import com.thiimont.encurtaurl.exception.ResourceCreationException;
 import com.thiimont.encurtaurl.model.Url;
 import com.thiimont.encurtaurl.model.UrlStatus;
 import com.thiimont.encurtaurl.model.User;
@@ -23,6 +23,7 @@ import java.net.*;
 
 import com.thiimont.encurtaurl.exception.InvalidUrlException;
 import com.thiimont.encurtaurl.exception.UrlNotFoundException;
+import com.thiimont.encurtaurl.exception.ResourceCreationException;
 
 import java.security.SecureRandom;
 import java.util.stream.Collectors;
@@ -35,6 +36,7 @@ import java.util.UUID;
 public class UrlService {
     private final UrlRepository urlRepository;
     private final UserRepository userRepository;
+    private final UrlConfig urlConfig;
     private final SecureRandom secureRandom;
     private final UrlValidator urlValidator;
 
@@ -43,15 +45,6 @@ public class UrlService {
     private static final int MAX_SHORTCODE_ATTEMPTS = 5;
 
     private static final int PAGE_SIZE = 10;
-
-    private String getUrlHostAndPort(String baseUrl) {
-        try {
-            URL url = new URL(baseUrl);
-            return "https://" + url.getAuthority();
-        } catch(MalformedURLException e) {
-            throw new ResourceCreationException();
-        }
-    }
 
     private URI parseUriAndNormalize(String targetUrl) {
         try {
@@ -91,9 +84,7 @@ public class UrlService {
 
     private boolean isValidUrl(String normalizedUri) {
         if (normalizedUri == null || normalizedUri.isBlank()) return false;
-        if (!urlValidator.isValid(normalizedUri)) return false;
-
-        return true;
+        return urlValidator.isValid(normalizedUri);
     }
 
     private String generateShortCode() {
@@ -103,7 +94,7 @@ public class UrlService {
                 .collect(Collectors.joining());
     }
 
-    public UrlResponseDTO shortenUrl(UUID uuidUser, String targetUrl, String baseUrl) {
+    public UrlResponseDTO shortenUrl(UUID uuidUser, String targetUrl) {
         User user = userRepository.findByUuid(uuidUser)
                 .orElseThrow(() -> new AccessDeniedException("Acesso negado."));
 
@@ -125,14 +116,9 @@ public class UrlService {
             try {
                 urlRepository.save(url);
 
-                return new UrlResponseDTO(
-                        url.getUuid(),
-                        url.getTargetUrl(),
-                        getUrlHostAndPort(baseUrl) + "/u/" + shortCode,
-                        url.getCreatedAt()
-                );
-            } catch (DataIntegrityViolationException ex) {
-                log.warn("Erro ao encurtar a URL '{}', tentando novamente: {}/{}", normalizedUri, attempts, MAX_SHORTCODE_ATTEMPTS);
+                return new UrlResponseDTO(url.getUuid(), url.getTargetUrl(), urlConfig.getBaseUrl() + "/u/" + shortCode, url.getCreatedAt());
+            } catch(DataIntegrityViolationException ignored) {
+            	log.warn("Erro ao encurtar a URL '{}', tentando novamente: {}/{}", normalizedUri, attempts, MAX_SHORTCODE_ATTEMPTS);
             }
         }
 
@@ -150,16 +136,11 @@ public class UrlService {
         return url.getTargetUrl();
     }
 
-    public Page<UrlResponseDTO> getAllUrls(UUID uuidUser, int page, String baseUrl) {
+    public Page<UrlResponseDTO> getAllUrls(UUID uuidUser, int page) {
         Pageable pageable = PageRequest.of(page, PAGE_SIZE, Sort.by("createdAt").descending());
         Page<Url> urlPage = urlRepository.findAllByUserUuid(uuidUser, pageable);
 
-        return urlPage.map(u ->
-                new UrlResponseDTO(
-                        u.getUuid(),
-                        u.getTargetUrl(),
-                        getUrlHostAndPort(baseUrl) + "/u/" + u.getShortCode(),
-                        u.getCreatedAt()));
+        return urlPage.map(u -> new UrlResponseDTO(u.getUuid(), u.getTargetUrl(), urlConfig.getBaseUrl() + "/u/" + u.getShortCode(), u.getCreatedAt()));
     }
 
     public void deleteUrl(UUID uuidUser, UUID uuidUrl) {
